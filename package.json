@@ -4,7 +4,14 @@
   "description": "Convert HTTP REST to gRPC",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run lint"
   },
   "repository": {
     "type": "git",
@@ -21,6 +28,9 @@
   },
   "homepage": "https://github.com/rodoufu/http-to-grpc#readme",
   "devDependencies": {
+    "@types/node": "^14.11.2",
+    "eslint": "^7.14.0",
+    "gts": "^3.0.2",
     "typescript": "^4.1.2"
   }
 }

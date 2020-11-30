@@ -1,0 +1,9 @@
+type: google.api.Service
+config_version: 3
+
+http:
+  rules:
+    - selector: Example
+      get: /sayHello
+#      get: /v1.1/instruments/{symbol}/fundingRate
+#      response_body: "*"

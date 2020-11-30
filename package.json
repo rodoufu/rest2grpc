@@ -1,0 +1,26 @@
+{
+  "name": "http-to-grpc",
+  "version": "0.0.1",
+  "description": "Convert HTTP REST to gRPC",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rodoufu/http-to-grpc.git"
+  },
+  "keywords": [
+    "grpc",
+    "http"
+  ],
+  "author": "Rodolfo Araujo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rodoufu/http-to-grpc/issues"
+  },
+  "homepage": "https://github.com/rodoufu/http-to-grpc#readme",
+  "devDependencies": {
+    "typescript": "^4.1.2"
+  }
+}

@@ -1,20 +1,28 @@
-language: nodejs
+language: node_js
 
-nodejs:
+node_js:
   - 'node'
   - '14'
 
-matrix:
-  fast_finish: true
+#matrix:
+#  fast_finish: true
 
 #branches:
 #  only:
 #  - master
 #  - /^release-.*/
 
-install:
-  - npm uninstall typescript --no-save
-  - npm ci
+#install:
+#  - npm uninstall typescript --no-save
+#  - npm ci
+
+before_script:
+  - npm install
+  - npm install typescript --save-dev
+  
+script:
+  - npm run compile
+  - npm run test
 
 cache:
   directories:

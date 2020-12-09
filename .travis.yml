@@ -1,0 +1,21 @@
+language: nodejs
+
+nodejs:
+  - 'node'
+  - '14'
+
+matrix:
+  fast_finish: true
+
+#branches:
+#  only:
+#  - master
+#  - /^release-.*/
+
+install:
+  - npm uninstall typescript --no-save
+  - npm ci
+
+cache:
+  directories:
+    - node_modules

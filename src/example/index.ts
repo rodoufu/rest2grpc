@@ -42,6 +42,24 @@ export class RestServer {
 		this.clients = {};
 	}
 
+	extractNamespaceClassMethod(selector: string): [string, string, string] {
+		let namespace: string;
+		let className: string;
+		let methodName: string;
+		let splited = selector.split('.');
+		if (splited.length < 2) {
+			throw `Invalid selector: ${selector}`;
+		}
+		methodName = <string>splited.pop();
+		className = <string>splited.pop();
+		if (splited.length == 0) {
+			namespace = "";
+		} else {
+			namespace = splited.join('.');
+		}
+		return [namespace, className, methodName];
+	}
+
 	async register(configFile: string, protoPath: string[], protoFile: string, address: string) {
 		const packageDefinition = loadSync(
 			protoFile,
@@ -56,7 +74,6 @@ export class RestServer {
 		);
 
 		const loaded = loadPackageDefinition(packageDefinition);
-		const Example = (loaded.example as any).Example; // FIXME
 
 		let fileContent = await readFile(configFile);
 		let configData = yaml.safeLoad(fileContent);
@@ -65,19 +82,39 @@ export class RestServer {
 			throw `Unexpected content for the config file ${configFile}`;
 		}
 		for (let rule of configData.http.rules) {
-			this.clients[rule.selector] = new Example(address, credentials.createInsecure());
+			let namespaceClassMethod = this.extractNamespaceClassMethod(rule.selector);
+			const namespace = namespaceClassMethod[0];
+			const className = namespaceClassMethod[1];
+			const methodName = namespaceClassMethod[2];
+
+			let theNamespace: any = loaded;
+			if (namespace.length) {
+				theNamespace = theNamespace[namespace];
+			}
+			// const Example = (loaded.example as any).Example; // FIXME
+			const TheClass = theNamespace[className];
+			// this.clients[rule.selector] = new Example(address, credentials.createInsecure());
+			this.clients[rule.selector] = new TheClass(address, credentials.createInsecure());
 
 			let operationFunc = async (req: any, res: any) => {
 				this.logger.info(JSON.stringify(req.body));
 				// res.send(await exampleClient.sayHello('Hi'));
 				let gRpcResp = new Promise(((resolve, reject) => {
-					this.clients[rule.selector].SayHello(req.body, (err: any, response: any) => {
+					// this.clients[rule.selector].SayHello(req.body, (err: any, response: any) => {
+					// 	if (err) {
+					// 		reject(err);
+					// 	} else {
+					// 		resolve(response);
+					// 	}
+					// });
+					const client = this.clients[rule.selector];
+					client[methodName](req.body, (err: any, response: any) => {
 						if (err) {
 							reject(err);
 						} else {
 							resolve(response);
 						}
-					})
+					});
 				}));
 				res.send(await gRpcResp);
 			};

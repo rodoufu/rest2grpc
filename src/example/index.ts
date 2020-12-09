@@ -1,64 +1,141 @@
 import express from "express";
+import {
+	loadPackageDefinition,
+	credentials,
+	Server,
+	ServerCredentials,
+	sendUnaryData,
+	ServerUnaryCall,
+} from '@grpc/grpc-js';
+import {loadSync} from '@grpc/proto-loader';
 import {ExampleClient} from "./example";
 
 const fs = require('fs');
 const yaml = require("js-yaml");
 const util = require('util');
-const logger = console;
 
 const readFile = util.promisify(fs.readFile);
 
-(async () => {
-	const app: express.Application = express();
-	app.use(express.json());
-	const exampleClient = new ExampleClient('localhost:50051');
+export class RestServer {
+	app: express.Application;
+	logger: any;
+	clients: { [id: string]: any };
 
-	let fileName = `${__dirname}/../../../protos/Example.yaml`;
-	let fileContent = await readFile(fileName);
-	let data = yaml.safeLoad(fileContent);
-	logger.info(`${JSON.stringify(data)}`);
+	constructor(logger: any) {
+		this.app = express();
+		this.app.use(express.json());
+		this.logger = logger;
+		if (!logger) {
+			this.logger = {
+				info: (...args: any[]) => {
+				},
+				debug: (...args: any[]) => {
+				},
+				warn: (...args: any[]) => {
+				},
+				error: (...args: any[]) => {
+				},
+				trace: (...args: any[]) => {
+				},
+			}
+		}
+		this.clients = {};
+	}
 
-	for (let rule of data.http.rules) {
-		let operationFunc = async (req: any, res: any) => {
-			logger.info(JSON.stringify(req.body));
-			res.send(await exampleClient.sayHello('Hi'));
-		};
-		if (rule.get) {
-			logger.info(`Registering GET ${rule.get}`)
-			app.get(rule.get, operationFunc);
+	async register(configFile: string, protoPath: string[], protoFile: string, address: string) {
+		const packageDefinition = loadSync(
+			protoFile,
+			{
+				keepCase: true,
+				longs: String,
+				enums: String,
+				defaults: true,
+				oneofs: true,
+				includeDirs: protoPath,
+			}
+		);
+
+		const loaded = loadPackageDefinition(packageDefinition);
+		const Example = (loaded.example as any).Example; // FIXME
+
+		let fileContent = await readFile(configFile);
+		let configData = yaml.safeLoad(fileContent);
+
+		if (!configData.http || !configData.http.rules) {
+			throw `Unexpected content for the config file ${configFile}`;
 		}
-		if (rule.head) {
-			logger.info(`Registering HEAD ${rule.head}`)
-			app.head(rule.head, operationFunc);
-		}
-		if (rule.post) {
-			logger.info(`Registering POST ${rule.post}`)
-			app.post(rule.post, operationFunc);
-		}
-		if (rule.put) {
-			logger.info(`Registering PUT ${rule.put}`)
-			app.put(rule.put, operationFunc);
-		}
-		if (rule.delete) {
-			logger.info(`Registering DELETE ${rule.delete}`)
-			app.delete(rule.delete, operationFunc);
-		}
-		if (rule.connect) {
-			app.connect(rule.connect, operationFunc);
-		}
-		if (rule.options) {
-			app.options(rule.options, operationFunc);
-		}
-		if (rule.trace) {
-			app.trace(rule.trace, operationFunc);
-		}
-		if (rule.patch) {
-			app.patch(rule.patch, operationFunc);
+		for (let rule of configData.http.rules) {
+			this.clients[rule.selector] = new Example(address, credentials.createInsecure());
+
+			let operationFunc = async (req: any, res: any) => {
+				this.logger.info(JSON.stringify(req.body));
+				// res.send(await exampleClient.sayHello('Hi'));
+				let gRpcResp = new Promise(((resolve, reject) => {
+					this.clients[rule.selector].SayHello(req.body, (err: any, response: any) => {
+						if (err) {
+							reject(err);
+						} else {
+							resolve(response);
+						}
+					})
+				}));
+				res.send(await gRpcResp);
+			};
+			if (rule.get) {
+				this.logger.info(`Registering GET ${rule.get}`);
+				this.app.get(rule.get, operationFunc);
+			}
+			if (rule.head) {
+				this.logger.info(`Registering HEAD ${rule.head}`);
+				this.app.head(rule.head, operationFunc);
+			}
+			if (rule.post) {
+				this.logger.info(`Registering POST ${rule.post}`);
+				this.app.post(rule.post, operationFunc);
+			}
+			if (rule.put) {
+				this.logger.info(`Registering PUT ${rule.put}`);
+				this.app.put(rule.put, operationFunc);
+			}
+			if (rule.delete) {
+				this.logger.info(`Registering DELETE ${rule.delete}`);
+				this.app.delete(rule.delete, operationFunc);
+			}
+			if (rule.connect) {
+				this.logger.info(`Registering CONNECT ${rule.connect}`);
+				this.app.connect(rule.connect, operationFunc);
+			}
+			if (rule.options) {
+				this.logger.info(`Registering OPTIONS ${rule.options}`);
+				this.app.options(rule.options, operationFunc);
+			}
+			if (rule.trace) {
+				this.logger.info(`Registering TRACE ${rule.trace}`);
+				this.app.trace(rule.trace, operationFunc);
+			}
+			if (rule.patch) {
+				this.logger.info(`Registering PATCH ${rule.patch}`);
+				this.app.patch(rule.patch, operationFunc);
+			}
 		}
 	}
 
+	start(port: number) {
+		let localLogger = this.logger;
+		this.app.listen(port, function () {
+			localLogger.warn(`App is listening on port ${port}!`);
+		});
+	}
+}
 
-	app.listen(3000, function () {
-		logger.warn(`App is listening on port 3000!`);
-	});
+(async () => {
+	const address = 'localhost:50051';
+
+	let configFile = `${__dirname}/../../../protos/Example.yaml`;
+	const restServer = new RestServer(console);
+	const protoPath = [`${__dirname}/../../../protos`];
+	const protoFile = "Example.proto";
+	await restServer.register(configFile, protoPath, protoFile, address);
+
+	restServer.start(3000);
 })();

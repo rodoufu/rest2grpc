@@ -3,7 +3,7 @@ config_version: 3
 
 http:
   rules:
-    - selector: Example
+    - selector: example.Example.SayHello
       get: /sayHello
       post: /sayHello
 #      get: /v1.1/instruments/{symbol}/fundingRate

@@ -8,6 +8,7 @@
     "lint": "gts lint",
     "clean": "gts clean",
     "compile": "tsc",
+    "watch": "tsc --watch",
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
@@ -44,6 +45,7 @@
     "@grpc/proto-loader": "^0.5.5",
     "@types/protobufjs": "^6.0.0",
     "express": "^4.17.1",
-    "google-protobuf": "^3.14.0"
+    "google-protobuf": "^3.14.0",
+    "js-yaml": "^3.14.1"
   }
 }

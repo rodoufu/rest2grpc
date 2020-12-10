@@ -1,5 +1,5 @@
 module.exports = {
-    "roots": [
+    'roots': [
         "<rootDir>/build"
     ],
     // "testMatch": [

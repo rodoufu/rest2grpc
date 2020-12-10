@@ -1,4 +1,4 @@
-import {ExampleClient, ExampleServer} from "./example";
+import {ExampleClient, ExampleServer} from './example';
 
 (async () => {
 	const address = '0.0.0.0:50051';

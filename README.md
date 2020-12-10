@@ -20,6 +20,8 @@
   </a>
 </p>
 
+Available at https://www.npmjs.com/package/rest2grpc
+
 ## References
 
 - https://github.com/grpc-ecosystem/grpc-gateway

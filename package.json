@@ -1,6 +1,6 @@
 {
   "name": "rest2grpc",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Convert HTTP REST to gRPC",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,10 @@
     "url": "git+https://github.com/rodoufu/rest2grpc.git"
   },
   "keywords": [
+    "rest",
     "grpc",
+    "gateway",
+    "grpc-gateway",
     "http"
   ],
   "author": "Rodolfo Araujo",

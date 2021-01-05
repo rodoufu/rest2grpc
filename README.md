@@ -62,7 +62,7 @@ and call the method `SayHello`.
 
 Now to call everything you only need to:
 ```ts
-import {Rest2gRPCServer} from 'rest2grpcServer';
+import {Rest2gRPCServer} from 'rest2grpc';
 (async () => {
 	const address = 'localhost:50051';
 

@@ -17,8 +17,9 @@
     "ignore_posttest": "npm run lint",
     "exampleRestServer": "node build/src/example/index.js",
     "exampleGrpcServer": "node build/src/example/server.js",
-    "prepublishOnly": "npm test && npm run lint",
-    "preversion": "npm run lint",
+    "prepublishOnly": "npm test",
+    "_prepublishOnly": "npm test && npm run lint",
+    "_preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
   },

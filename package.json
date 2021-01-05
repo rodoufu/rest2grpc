@@ -1,6 +1,6 @@
 {
   "name": "rest2grpc",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Convert HTTP REST to gRPC",
   "main": "index.js",
   "scripts": {
@@ -50,5 +50,6 @@
     "express": "^4.17.1",
     "google-protobuf": "^3.14.0",
     "js-yaml": "^3.14.1"
-  }
+  },
+  "types": "build/src/index.d.ts"
 }

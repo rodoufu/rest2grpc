@@ -5,10 +5,18 @@
     "outDir": "build",
     //    "types": ["node"],
     "esModuleInterop": true,
-    "declaration": true
+    "declaration": true,
+    "strict": true,
   },
   "include": [
     "src/**/*.ts",
-    "test/**/*.ts"
+    "test/**/*.ts",
   ],
+  "exclude": [
+    "node_modules",
+    "build",
+  ],
+  "files": [
+    "./src/index.ts",
+  ]
 }

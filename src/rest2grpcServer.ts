@@ -5,7 +5,7 @@ import {
 	ChannelCredentials,
 	GrpcObject,
 } from '@grpc/grpc-js';
-import {load, loadSync} from '@grpc/proto-loader';
+import {load} from '@grpc/proto-loader';
 import {ErrorHandler} from "./errorHandler";
 import {Interceptor} from "./interceptor";
 

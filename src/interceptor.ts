@@ -28,3 +28,8 @@ export interface Interceptor {
 	 */
 	afterCompletion(request: Request, response: Response, gRpcResponse: any): void;
 }
+
+export {
+	Request,
+	Response,
+};

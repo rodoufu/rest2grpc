@@ -157,15 +157,23 @@ export class Rest2gRPCServer {
 			const className = namespaceClassMethod[1];
 			const methodName = namespaceClassMethod[2];
 
-			let theNamespace: any = loaded;
-			if (namespace.length) {
-				theNamespace = theNamespace[namespace];
-			}
+			let theNamespace: any = this.getNamespace(loaded, namespace);
 			const TheClass = theNamespace[className];
 			this.clients[rule.selector] = new TheClass(address, channelCredentials);
 
 			this.registerHttpMethods(rule, methodName);
 		}
+	}
+
+	private getNamespace(grpcObject: GrpcObject, namespaceName: string): any {
+		let theNamespace: any = grpcObject;
+		for (let namespaceIt of namespaceName.split('.')) {
+			theNamespace = theNamespace[namespaceIt];
+			if (theNamespace === undefined) {
+				throw `Namespace not found: ${namespaceName}`;
+			}
+		}
+		return theNamespace;
 	}
 
 	httpMethodCallback(rule: any, methodName: string): (req: Request, res: Response) => Promise<void> {

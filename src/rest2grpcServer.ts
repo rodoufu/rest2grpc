@@ -8,6 +8,7 @@ import {
 import {load} from '@grpc/proto-loader';
 import {ErrorHandler} from "./errorHandler";
 import {Interceptor} from "./interceptor";
+import http from "http";
 
 const fs = require('fs');
 const yaml = require("js-yaml");
@@ -28,11 +29,12 @@ export enum ErrorSource {
  * REST server who translates the requests into gRPC.
  */
 export class Rest2gRPCServer {
-	app: express.Application;
-	logger: any;
-	clients: { [id: string]: any };
-	errorHandler: ErrorHandler;
-	interceptors: Interceptor[];
+	private readonly app: express.Application;
+	private httpServer?: http.Server;
+	private readonly logger: any;
+	private readonly clients: { [id: string]: any };
+	private readonly errorHandler: ErrorHandler;
+	private readonly interceptors: Interceptor[];
 
 	constructor(logger?: any, errorHandler?: ErrorHandler) {
 		this.app = express();
@@ -267,9 +269,24 @@ export class Rest2gRPCServer {
 	 */
 	start(port: number): void {
 		let localLogger = this.logger;
-		this.app.listen(port, function () {
+		this.httpServer = this.app.listen(port, function () {
 			localLogger.warn(`App is listening on port ${port}!`);
 		});
 	}
 
+	close(): void {
+		if (this.httpServer) {
+			this.logger.warn(`Close operation initiated`);
+			this.httpServer.close(() => {
+				this.logger.warn(`Close operation finished`);
+			});
+		}
+	}
 }
+
+export {
+	ChannelCredentials,
+	GrpcObject,
+	Request,
+	Response,
+};

@@ -1,6 +1,6 @@
 {
   "name": "rest2grpc",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Convert HTTP REST to gRPC",
   "main": "build/src/index.d.ts",
   "types": "build/src/index.d.ts",
@@ -42,7 +42,6 @@
   "homepage": "https://github.com/rodoufu/rest2grpc#readme",
   "devDependencies": {
     "@types/jest": "^26.0.18",
-    "@types/node": "^14.14.11",
     "eslint": "^7.14.0",
     "gts": "^3.0.2",
     "jest": "^26.6.3",
@@ -56,6 +55,7 @@
     "@types/express": "^4.17.9",
     "express": "^4.17.1",
     "google-protobuf": "^3.14.0",
-    "js-yaml": "^3.14.1"
+    "js-yaml": "^3.14.1",
+    "@types/node": "^14.14.11"
   }
 }

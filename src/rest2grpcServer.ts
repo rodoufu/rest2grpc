@@ -132,10 +132,11 @@ export class Rest2gRPCServer {
 	 * @param protoFile Proto file to be loaded.
 	 * @param address Address to the gRPC endpoint to be called.
 	 * @param channelCredentials Credentials to be used.
+	 * @param fixUrlParam Change URL param from `/example/{id}` to `/example/:id` the express pattern.
 	 */
 	async register(
 		configFile: string, protoPath: string[], protoFile: string, address: string,
-		channelCredentials?: ChannelCredentials
+		channelCredentials?: ChannelCredentials, fixUrlParam: boolean = true,
 	) {
 		if (!channelCredentials) {
 			channelCredentials = credentials.createInsecure();
@@ -161,7 +162,7 @@ export class Rest2gRPCServer {
 			const TheClass = theNamespace[className];
 			this.clients[rule.selector] = new TheClass(address, channelCredentials);
 
-			this.registerHttpMethods(rule, methodName);
+			this.registerHttpMethods(rule, methodName, fixUrlParam);
 		}
 	}
 
@@ -224,43 +225,72 @@ export class Rest2gRPCServer {
 		};
 	}
 
-	registerHttpMethods(rule: any, methodName: string) {
+	registerHttpMethods(rule: any, methodName: string, fixUrlParam: boolean) {
+		const fixAndLog = (method: string, value: string): string => {
+			if (fixUrlParam) {
+				let newValue = this.fixEndpoint(value);
+				if (newValue != value) {
+					this.logger.info(`Fixing the address ${newValue} to ${value}`);
+				}
+				value = newValue;
+			}
+			this.logger.info(`Registering ${method} ${value} for ${rule.selector}`);
+			return value;
+		};
+
 		if (rule.get) {
-			this.logger.info(`Registering GET ${rule.get} for ${rule.selector}`);
+			rule.get = fixAndLog('GET', rule.get);
 			this.app.get(rule.get, this.httpMethodCallback(rule, methodName));
 		}
 		if (rule.head) {
-			this.logger.info(`Registering HEAD ${rule.head} for ${rule.selector}`);
+			rule.head = fixAndLog('HEAD', rule.head);
 			this.app.head(rule.head, this.httpMethodCallback(rule, methodName));
 		}
 		if (rule.post) {
-			this.logger.info(`Registering POST ${rule.post} for ${rule.selector}`);
+			rule.post = fixAndLog('POST', rule.post);
 			this.app.post(rule.post, this.httpMethodCallback(rule, methodName));
 		}
 		if (rule.put) {
-			this.logger.info(`Registering PUT ${rule.put} for ${rule.selector}`);
+			rule.put = fixAndLog('PUT', rule.put);
 			this.app.put(rule.put, this.httpMethodCallback(rule, methodName));
 		}
 		if (rule.delete) {
-			this.logger.info(`Registering DELETE ${rule.delete} for ${rule.selector}`);
+			rule.delete = fixAndLog('DELETE', rule.delete);
 			this.app.delete(rule.delete, this.httpMethodCallback(rule, methodName));
 		}
 		if (rule.connect) {
-			this.logger.info(`Registering CONNECT ${rule.connect} for ${rule.selector}`);
+			rule.connect = fixAndLog('CONNECT', rule.connect);
 			this.app.connect(rule.connect, this.httpMethodCallback(rule, methodName));
 		}
 		if (rule.options) {
-			this.logger.info(`Registering OPTIONS ${rule.options} for ${rule.selector}`);
+			rule.options = fixAndLog('OPTIONS', rule.options);
 			this.app.options(rule.options, this.httpMethodCallback(rule, methodName));
 		}
 		if (rule.trace) {
-			this.logger.info(`Registering TRACE ${rule.trace} for ${rule.selector}`);
+			rule.trace = fixAndLog('TRACE', rule.trace);
 			this.app.trace(rule.trace, this.httpMethodCallback(rule, methodName));
 		}
 		if (rule.patch) {
-			this.logger.info(`Registering PATCH ${rule.patch} for ${rule.selector}`);
+			rule.patch = fixAndLog('PATCH', rule.patch);
 			this.app.patch(rule.patch, this.httpMethodCallback(rule, methodName));
 		}
+	}
+
+	/**
+	 * Change endpoint address to the express pattern.
+	 * @param endpoint Endpoint address.
+	 */
+	fixEndpoint(endpoint: string): string {
+		const re = /(.*){(.*)}(.*)/;
+		while (true) {
+			let resp = endpoint.replace(re, "$1:$2$3");
+			if (resp == endpoint) {
+				endpoint = resp;
+				break;
+			}
+			endpoint = resp;
+		}
+		return endpoint;
 	}
 
 	/**

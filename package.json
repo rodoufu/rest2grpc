@@ -1,6 +1,6 @@
 {
   "name": "rest2grpc",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Convert HTTP REST to gRPC",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
